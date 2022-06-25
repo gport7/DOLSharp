@@ -144,8 +144,8 @@ namespace DOL.GS.GameEvents
 			{
 				var usedSlots = new Dictionary<eInventorySlot, bool>();
 				
-				if (m_cachedClassEquipment.ContainsKey((eCharacterClass)ch.Class))
-				{
+				//if (m_cachedClassEquipment.ContainsKey((eCharacterClass)ch.Class))
+				//{
 					// sort for filling righ hand first...
 					foreach (var item in m_cachedClassEquipment.Where(k => k.Key == 0 || k.Key == (eCharacterClass)ch.Class).SelectMany(kv => kv.Value).OrderBy(it => it.Item_Type))
 					{
@@ -224,7 +224,7 @@ namespace DOL.GS.GameEvents
 						
 						GameServer.Database.AddObject(inventoryItem);
 					}
-				}
+				//}
 				
 			}
 			catch (Exception err)
