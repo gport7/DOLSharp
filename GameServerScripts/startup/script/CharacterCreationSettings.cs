@@ -110,6 +110,20 @@ namespace DOL.GS.GameEvents
 				ch.Platinum = Money.GetPlatinum(value);
 			}
 
+			//GP: Start out as custom class 63, set all stats to 60 no matter what
+			ch.Class = 63;
+			ch.Strength = 60;
+			ch.Constitution = 60;
+			ch.Dexterity = 60;
+			ch.Quickness = 60;
+			ch.Intelligence = 60;
+			ch.Piety = 60;
+			ch.Empathy = 60;
+			ch.Charisma = 60;
+			//hitpoints
+			//weaponskill
+
+
 			// Property Realm Level
 			if (STARTING_REALM_LEVEL > 0)
 			{

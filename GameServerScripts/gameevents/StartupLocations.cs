@@ -123,11 +123,11 @@ namespace DOL.GS.GameEvents
 					             ch.AccountName, ch.Name, ch.Region, ch.Realm, ch.Class, (eCharacterClass) ch.Class, ch.Race, (eRace)ch.Race, chArgs.GameClient.Version);
 					
 					// GP: hardcode aerus city lobby start point for all realms (deleted pre-existing DB info)
-					ch.Xpos = 42803;
-					ch.Ypos = 38478;
-					ch.Zpos = 10224;
+					ch.Xpos = 42797;
+					ch.Ypos = 38397;
+					ch.Zpos = 10227;
 					ch.Region = 147;
-					ch.Direction = 1080;
+					ch.Direction = 1023;
 					BindCharacter(ch);
 					log.Info(ch.Name + " has been created and bound in Aerus City Lobby");
 				}
