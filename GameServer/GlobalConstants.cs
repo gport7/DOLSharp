@@ -938,6 +938,9 @@ namespace DOL.GS
 		Vampiir = 58,
 		Warden = 46,
 		MaulerHib = 62,
+
+		//custom classes
+		Conqueror = 63,
 	}
 
 	/// <summary>

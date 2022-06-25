@@ -121,6 +121,15 @@ namespace DOL.GS.GameEvents
 				{
 					log.WarnFormat("startup location not found: account={0}; char name={1}; region={2}; realm={3}; class={4} ({5}); race={6} ({7}); version={8}",
 					             ch.AccountName, ch.Name, ch.Region, ch.Realm, ch.Class, (eCharacterClass) ch.Class, ch.Race, (eRace)ch.Race, chArgs.GameClient.Version);
+					
+					// GP: hardcode aerus city lobby start point for all realms (deleted pre-existing DB info)
+					ch.Xpos = 42803;
+					ch.Ypos = 38478;
+					ch.Zpos = 10224;
+					ch.Region = 147;
+					ch.Direction = 1080;
+					BindCharacter(ch);
+					log.Info(ch.Name + " has been created and bound in Aerus City Lobby");
 				}
 				else
 				{

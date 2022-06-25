@@ -1,0 +1,36 @@
+//QUEUE UP
+-----LOBBY LOC: 42803(x) 38478(y) 10224(z) 1080(heading) 147(region)-----
+make lobby pvp safe area, bind area
+start in multi-realm game lobby region in queue area
+click a text box to queue up to fight
+if total players in region = 1 then don't start
+start if total players in region have clicked to queue up and its a viable match up
+1v1 (2), 1v1v1 (3), 2v2 (4), 2v2v2 (6), 3v3 (6), 4v4 (8), 3v3v3 (9), 5v5 (10), 4v4v4 (12), 5v5v5 (15) 
+
+
+
+//START
+set all players binds to respective PKS
+IF 2 REALMS: start with missing realm having dead nexus
+IF 2 REALMS: do not initiate pathing and mob spawning for the missing realm and the mobs going against it
+port players to respective PKs
+begin money timer and start all players in region gaining passive money
+begin mob pathing timer
+
+
+
+//FINISH
+set all players binds to aerus lobby
+IF 2 REALMS: when 1 nexus is destroyed, the remaining nexus realm is declared the winner
+IF 3 REALMS: when 2 nexuses are destroyed, the remaining nexus realm is declared the winner
+add delay after second nexus kill vefore porting players
+stop all timers
+kill all mobs
+port all players to winning room of lobby region
+
+
+
+//RESET (when players get ported out)
+reset nexuses
+reset XP
+reset money
