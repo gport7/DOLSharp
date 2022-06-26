@@ -386,8 +386,8 @@ namespace DOL.GS
 			//hitscap, caps at 200
 			if (iBonusType == (int)eProperty.MaxHealthCapBonus)
 			{
-				if (iBonus > 200)
-					iBonus = 200;
+				if (iBonus > 1000)
+					iBonus = 1000;
 			}
 			//cap at 25, but can get overcaps
 			//PowerPool
