@@ -41,7 +41,7 @@ namespace DOL.GS.PropertyCalc
 			{
 				GamePlayer player = (GamePlayer)living;
 
-				int itemCap = player.Level/5+1;
+				int itemCap = player.Level + 50; //GP: modified to get DPS on melee skills without training
 
 				int itemBonus = player.ItemBonus[(int)property];
 

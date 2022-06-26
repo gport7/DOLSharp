@@ -303,14 +303,14 @@ namespace DOL.GS
 						else if (i == (int)eProperty.MaxHealth)
 						{
 							int hitscap = player.ItemBonus[(int)eProperty.MaxHealthCapBonus];
-							if (hitscap > 200)
+							if (hitscap > 1000)
 							{
-								hitscap = 200;
+								hitscap = 1000;
 							}
 							int hits = player.ItemBonus[(int)eProperty.MaxHealth];
-							if (hits > hitscap + 200)
+							if (hits > hitscap + 1000)
 							{
-								int tempbonus = hitscap + 200;
+								int tempbonus = hitscap + 1000;
 								info.Add(ItemBonusDescription(tempbonus, i));
 							}
 							else
