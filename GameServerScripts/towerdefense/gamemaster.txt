@@ -30,7 +30,24 @@ port all players to winning room of lobby region
 
 
 
-//RESET (when players get ported out)
+//RESET (when players get ported out to start the game)
 reset nexuses
 reset XP
 reset money
+reset items (except for starting equipment, regenerate missing/destroyed items)
+
+
+
+//STARTING SKILLS
+all players get the same selection of combat styles at the start, no training
+all players get purge 3 at start (5 min reuse)
+quick speed boost level 50 stealth that lasts for 5 seconds (5 min reuse)
+
+
+
+
+//ITEMS
+pulsing buff spell magical items can be bought (pulsing +str etc)
+castable spell items can be bough (heal, dd, debuff, disease, nearsight, mez, stun, dot, snare, pet)
+unique themed weapons with special proc combos
+unique themed armors with unique utility

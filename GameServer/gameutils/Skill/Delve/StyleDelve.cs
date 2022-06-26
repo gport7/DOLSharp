@@ -101,16 +101,16 @@ namespace DOL.GS.Delve
 
 		public override IEnumerable<ClientDelve> GetClientDelves()
 		{
-			var result = new List<ClientDelve>() { };
-			foreach (var proc in style.Procs)
-			{
-				if (proc.Item2 == 0 || proc.Item2 == style.ClassID)
+			var result = new List<ClientDelve>() { };			
+				foreach (var proc in style.Procs)
 				{
-					var procDelve = new SpellDelve(proc.Item1).GetClientDelve();
-					result.Add(procDelve);
+					if (proc.Item2 == 0 || proc.Item2 == style.ClassID)
+					{
+						var procDelve = new SpellDelve(proc.Item1).GetClientDelve();
+						result.Add(procDelve);
+					}
 				}
-			}
-			result.Add(GetClientDelve());
+				result.Add(GetClientDelve());
 			return result;
 		}
     }

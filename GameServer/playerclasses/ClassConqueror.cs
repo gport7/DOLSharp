@@ -30,7 +30,7 @@ namespace DOL.GS.PlayerClass
 			: base()
 		{
 			m_profession = "PlayerClass.Profession.PathofEssence";
-			m_specializationMultiplier = 22;
+			m_specializationMultiplier = 0;
 			m_primaryStat = eStat.DEX;
 			m_secondaryStat = eStat.QUI;
 			m_tertiaryStat = eStat.STR;

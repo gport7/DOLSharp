@@ -12439,7 +12439,9 @@ namespace DOL.GS
 			int allpoints = -1;
 			for (int i = 1; i <= Level; i++)
 			{
-				if (i <= 5) allpoints += i; //start levels
+				//if (i <= 5) allpoints += i; //start levels
+				// GP: change to start spec points less than 5 = 0
+				if (i <= 5) allpoints = 0; //start levels
 				if (i > 5) allpoints += CharacterClass.SpecPointsMultiplier * i / 10; //normal levels
 				if (i > 40) allpoints += CharacterClass.SpecPointsMultiplier * (i - 1) / 20; //half levels
 			}

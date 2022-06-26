@@ -110,7 +110,8 @@ namespace DOL.GS.GameEvents
 				ch.Platinum = Money.GetPlatinum(value);
 			}
 
-			//GP: Start out as custom class 63, set all stats to 60 no matter what
+			// Property STATS
+			// GP: Start out as custom class 63, set all stats to 60 no matter what
 			ch.Class = 63;
 			ch.Strength = 60;
 			ch.Constitution = 60;
@@ -120,6 +121,7 @@ namespace DOL.GS.GameEvents
 			ch.Piety = 60;
 			ch.Empathy = 60;
 			ch.Charisma = 60;
+			ch.IsCloakHoodUp = true;
 			//hitpoints
 			//weaponskill
 
