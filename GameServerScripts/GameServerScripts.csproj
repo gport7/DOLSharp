@@ -68,6 +68,9 @@
     <ScriptFiles Include="**\*.cs" />
     <XmlFiles Include="dbupdater\**\*.xml" />
   </ItemGroup>
+  <ItemGroup>
+    <ScriptFiles Remove="towerdefense\GameMaster.cs" />
+  </ItemGroup>
   <Target Name="CopyFiles" AfterTargets="AfterBuild">
     <Copy SourceFiles="@(ScriptFiles)" DestinationFiles="@(ScriptFiles->'$(MSBuildProjectDirectory)\..\$(Configuration)\scripts\%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(XmlFiles)" DestinationFiles="@(XmlFiles->'$(MSBuildProjectDirectory)\..\$(Configuration)\scripts\dbupdater\%(RecursiveDir)%(Filename)%(Extension)')" />
