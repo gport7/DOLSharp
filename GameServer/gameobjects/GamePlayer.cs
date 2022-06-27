@@ -2740,7 +2740,8 @@ namespace DOL.GS
 		/// <returns></returns>
 		public virtual double CalcFallDamage(int fallDamagePercent)
 		{
-			if (fallDamagePercent <= 0)
+			//if (fallDamagePercent <= 0)
+			if (fallDamagePercent >= 0) //GP: cancel fall damage for this server entirely
 				return 0;
 
 			int safeFallLevel = GetAbilityLevel(Abilities.SafeFall);
