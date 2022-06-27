@@ -122,9 +122,11 @@ namespace DOL.GS.PropertyCalc
             // Caps and cap increases. Only players actually have a buff bonus cap, 
             // pets don't.
 
-            int baseBuffBonusCap = (living is GamePlayer) ? (int)(living.Level * 1.25) : Int16.MaxValue;
-            int specBuffBonusCap = (living is GamePlayer) ? (int)(living.Level * 1.5 * 1.25) : Int16.MaxValue;
-            
+            //int baseBuffBonusCap = (living is GamePlayer) ? (int)(living.Level * 1.25) : Int16.MaxValue;
+            //int specBuffBonusCap = (living is GamePlayer) ? (int)(living.Level * 1.5 * 1.25) : Int16.MaxValue;
+            int baseBuffBonusCap = (living is GamePlayer) ? (int)(living.Level * 10) : Int16.MaxValue; //GP: raise base buff cap to 500 for sake of this server
+            int specBuffBonusCap = (living is GamePlayer) ? (int)(living.Level * 10) : Int16.MaxValue; //GP: raise spec buff cap to 500 for sake of this server
+
             // Apply soft caps.
 
             baseBuffBonus = Math.Min(baseBuffBonus, baseBuffBonusCap);
@@ -175,7 +177,8 @@ namespace DOL.GS.PropertyCalc
         public static int GetItemBonusCap(GameLiving living, eProperty property)
         {
             if (living == null) return 0;
-            return (int) (living.Level * 1.5);
+            //return (int) (living.Level * 1.5);
+            return (int)(living.Level * 18 - 1); //GP: raise item stat bonus cap to 999 (for level 50) for this particular server
         }
 
         /// <summary>
