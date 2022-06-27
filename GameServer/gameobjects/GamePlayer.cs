@@ -6352,7 +6352,8 @@ namespace DOL.GS
 
 						//only miss when strafing when attacking a player
 						//30% chance to miss
-						if (IsStrafing && ad.Target is GamePlayer && Util.Chance(30))
+						//GP: change to 0%
+						if (IsStrafing && ad.Target is GamePlayer && Util.Chance(0)) // was 30
 						{
 							ad.AttackResult = eAttackResult.Missed;
 							Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.StrafMiss"), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);

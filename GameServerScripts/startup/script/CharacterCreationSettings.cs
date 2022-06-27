@@ -111,16 +111,16 @@ namespace DOL.GS.GameEvents
 			}
 
 			// Property STATS
-			// GP: Start out as custom class 63, set all stats to 60 no matter what
+			// GP: Start out as custom class 63, set all stats to 100 no matter what
 			ch.Class = 63;
-			ch.Strength = 60;
-			ch.Constitution = 60;
-			ch.Dexterity = 60;
-			ch.Quickness = 60;
-			ch.Intelligence = 60;
-			ch.Piety = 60;
-			ch.Empathy = 60;
-			ch.Charisma = 60;
+			ch.Strength = 100;
+			ch.Constitution = 100;
+			ch.Dexterity = 100;
+			ch.Quickness = 100;
+			ch.Intelligence = 100;
+			ch.Piety = 100;
+			ch.Empathy = 100;
+			ch.Charisma = 100;
 			ch.IsCloakHoodUp = true;
 			//hitpoints
 			//weaponskill
