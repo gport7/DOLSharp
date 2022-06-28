@@ -52,8 +52,6 @@ namespace DOL.GS
         {
             if (base.Interact(player))
             {
-                //Follow(player, 50, 800);
-                //WalkTo(player, 250); this makes npc run to you
                 TurnTo(player, 250); //this makes NPC turn to you
                 foreach (GamePlayer emoteplayer in this.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
                 {
