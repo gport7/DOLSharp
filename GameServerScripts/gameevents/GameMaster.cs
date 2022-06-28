@@ -289,8 +289,8 @@ namespace GameServerScripts.gameevents
             //create melee minion
             //add if statements for realm for all these properties, copy it over to SpawnCaster method
             m_meleeMinion = new MeleeMinionNPC();
-            m_meleeMinion.X = 42079;
-            m_meleeMinion.Y = 38699;
+            m_meleeMinion.X = 42079 + m_rnd.Next(40);
+            m_meleeMinion.Y = 38699 + m_rnd.Next(40);
             m_meleeMinion.Z = 10341;
             m_meleeMinion.Realm = realm;
             m_meleeMinion.Name = "Melee";
@@ -301,14 +301,19 @@ namespace GameServerScripts.gameevents
             bool good = true;
             if (!m_meleeMinion.AddToWorld())
                 good = false;
+
+
+            //make it so the mobs cheer when a player of an opposing realm dies
+            //and cry when a member of the ally realm dies
+
         }
 
         protected static void SpawnCaster(eRealm realm)
         {
             //create melee minion
             m_casterMinion = new CasterMinionNPC();
-            m_casterMinion.X = 42079;
-            m_casterMinion.Y = 38699;
+            m_casterMinion.X = 42079 + m_rnd.Next(40);
+            m_casterMinion.Y = 38699 + m_rnd.Next(40);
             m_casterMinion.Z = 10341;
             m_casterMinion.Realm = realm;
             m_casterMinion.Model = 45;
