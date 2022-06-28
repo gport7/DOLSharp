@@ -82,6 +82,7 @@ namespace GameServerScripts.gameevents
             {
                 if (!base.WhisperReceive(source, str)) return false;
                 if (!(source is GamePlayer)) return false;
+                //if (game is happening right now) return false;
 
                 GamePlayer player = source as GamePlayer;
                 TurnTo(player.X, player.Y);
@@ -95,10 +96,12 @@ namespace GameServerScripts.gameevents
                         //get int for players in queue for x from the 2d array
                         SendReply(player, "You have joined the queue. \n" +
                                     "There are X/Y players in the queue/lobby.");
+                        log.Info(player.Name + " has joined the queue");
+                        log.Info("Full queue: " + playerQueue);
                         //if the number of players in the queue vs number in lobby is correct, then start the game
                         //StartSession();
                         //(clear this queue when the game session is over)
-                        
+
                         //ELSE
                         //SendReply(player, "You are already in the queue."); 
                         break;
@@ -109,6 +112,8 @@ namespace GameServerScripts.gameevents
                         //get int for players in queue for x from the 2d array
                         SendReply(player, "You have left the queue. \n" +
                                     "There are X/Y players in the queue/lobby.");
+                        log.Info(player.Name + " has left the queue");
+                        log.Info("Full queue: " + playerQueue);
 
                         //ELSE
                         //SendReply(player, "You can't leave a queue that you aren't in.");
@@ -148,18 +153,55 @@ namespace GameServerScripts.gameevents
                 player.Out.SendMessage(msg, eChatType.CT_System, eChatLoc.CL_PopupWindow);
             }
         }
-        #endregion    
+
+        //Declare turret NPCs
+
+        //Declare melee NPCs
+        public class MeleeMinionNPC : GameNPC
+        {
+            //Empty constructor, sets the default parameters for this NPC
+            public MeleeMinionNPC() : base()
+            {
+                Size = 40;
+                Level = 40;
+                Health = 500;
+                IsWorthReward = true;
+                CurrentRegionID = 234; //whatever proving ground is
+            }
+        }
+
+        //Declare caster NPCs
+        public class CasterMinionNPC : GameNPC
+        {
+            //Empty constructor, sets the default parameters for this NPC
+            public CasterMinionNPC() : base()
+            {
+                Size = 40;
+                Level = 40;
+                Health = 400;
+                IsWorthReward = true;
+                CurrentRegionID = 234; //whatever proving ground is
+            }
+        }
+
+        //Declare nexuses
+        #endregion
 
         #region variables
         //some randomness just in case (not implemented anywhere) refer to fightingmobs
         private static Random m_rnd;
-        //one GameMasterNPC who will control the game sessions
+        //one GameMasterNPC who will control the game session
         private static GameMasterNPC m_gameMaster;
-        //timers to time the creation of our mob waves
+        //a melee minion
+        private static MeleeMinionNPC m_meleeMinion;
+        //a caster minion
+        private static CasterMinionNPC m_casterMinion;
+        //timers to time the creation of mob waves
         private static Timer m_waveTimer;
         private static Timer m_soloTimer;
         //two ints for mobs per wave
         private static int i = 0; //counter start at 0
+        private static int meleeSize = 6; //number of melee mobs to make (front line), remainder of wave are casters
         private static int waveSize = 10; //max mobs per wave
         //2d array for players (player and realm(to be changed to proper realm on start))
         private static int[,] playerQueue;
@@ -219,7 +261,18 @@ namespace GameServerScripts.gameevents
         protected static void CreateMobSolo(object sender, ElapsedEventArgs args)
         {
             i++; //increases by 1 per timer elapse
-            m_gameMaster.Say("Mob " + i + " created!");  //dummy action for testing
+
+            if (i <= meleeSize)
+            {
+                //make melee mob
+                m_gameMaster.Say("Mob " + i + " created! (melee)");  //dummy action for testing
+                SpawnMelee(eRealm.Hibernia);
+            } else
+            {
+                //make caster mob
+                m_gameMaster.Say("Mob " + i + " created! (caster)");  //dummy action for testing
+                SpawnCaster(eRealm.Hibernia);
+            }
 
             //when i meets the limit the timer stops, and no more mobs are made in this wave
             if (i >= waveSize)
@@ -229,6 +282,43 @@ namespace GameServerScripts.gameevents
                     m_soloTimer.Stop();
                     m_soloTimer.Close();
                 }
+        }
+
+        protected static void SpawnMelee(eRealm realm) //put 2 arguments here for eRealm (one for source realm and one for target realm)
+        {
+            //create melee minion
+            //add if statements for realm for all these properties, copy it over to SpawnCaster method
+            m_meleeMinion = new MeleeMinionNPC();
+            m_meleeMinion.X = 42079;
+            m_meleeMinion.Y = 38699;
+            m_meleeMinion.Z = 10341;
+            m_meleeMinion.Realm = realm;
+            m_meleeMinion.Name = "Melee";
+            m_meleeMinion.Model = 34;
+            m_meleeMinion.CurrentRegionID = 147;
+
+            //add to world
+            bool good = true;
+            if (!m_meleeMinion.AddToWorld())
+                good = false;
+        }
+
+        protected static void SpawnCaster(eRealm realm)
+        {
+            //create melee minion
+            m_casterMinion = new CasterMinionNPC();
+            m_casterMinion.X = 42079;
+            m_casterMinion.Y = 38699;
+            m_casterMinion.Z = 10341;
+            m_casterMinion.Realm = realm;
+            m_casterMinion.Model = 45;
+            m_casterMinion.Name = "Caster";
+            m_casterMinion.CurrentRegionID = 147;
+
+            //add to world
+            bool good = true;
+            if (!m_casterMinion.AddToWorld())
+                good = false;
         }
 
         //This function is called whenever the event is stopped
@@ -253,7 +343,7 @@ namespace GameServerScripts.gameevents
             //REMOVE EVERYTHING! FULL RESET! ANYTHING CREATED MUST BE DESTROYED!
 
             //We remove all minions/casters from the DB by mob name
-            //TBD
+            //TBD - I dont think this is necessary bc they are instances
 
             //We delete our master from the world
             if (m_gameMaster != null)
