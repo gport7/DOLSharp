@@ -309,7 +309,7 @@ namespace GameServerScripts.gameevents
             ///////////////////BELOW THIS LINE (within these brackets) MOVES TO NEW SECTION/////////////////
 
             //timer that will make mob waves every x milliseconds (move to session start) (remember to have a session end and close this)
-            m_waveTimer = new Timer(30000);
+            m_waveTimer = new Timer(60000);
             m_waveTimer.AutoReset = true;
             m_waveTimer.Elapsed += new ElapsedEventHandler(CreateMobWave);
             m_waveTimer.Start(); //this will move to session start method
@@ -398,7 +398,7 @@ namespace GameServerScripts.gameevents
             }
             //basic minion properties
             m_minion.RespawnInterval = -1;
-            m_minion.Health = 300;
+            m_minion.Level = 40;
             m_minion.IsWorthReward = true;
             m_minion.Z = 8640;
             m_minion.CurrentRegionID = 234;
