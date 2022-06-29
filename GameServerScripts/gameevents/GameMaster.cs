@@ -239,8 +239,8 @@ namespace GameServerScripts.gameevents
         private static Timer m_soloTimer;
         //ints for mobs per wave
         private static int i = 0; //counter start at 0
-        private static int meleeSize = 6; //number of melee mobs to make (front line), remainder of wave are casters
-        private static int waveSize = 10; //max mobs per wave
+        private static int meleeSize = 2; //number of melee mobs to make (front line), remainder of wave are casters
+        private static int waveSize = 4; //max mobs per wave
         //2d array for players (player,realm (to be changed to proper realm on start), minionScore (start at 0, add per minion kill))
         private static int[,] playerQueue;
         //bool for if a game is active
@@ -408,7 +408,9 @@ namespace GameServerScripts.gameevents
             {
                 m_minion.GuildName = "Hibernia";
                 m_minion.Realm = realmSource;
-                m_minion.Model = 881;
+                //model
+                if (mobType == "melee"){m_minion.Model = 881;}
+                    else {m_minion.Model = 887;}
                 //spawnpoint
                 m_minion.X = 542193 + m_rnd.Next(40);
                 m_minion.Y = 550173 + m_rnd.Next(40);                
@@ -417,7 +419,9 @@ namespace GameServerScripts.gameevents
             {
                 m_minion.GuildName = "Albion";
                 m_minion.Realm = realmSource;
-                m_minion.Model = 882;
+                //model
+                if (mobType == "melee"){m_minion.Model = 882;}
+                    else {m_minion.Model = 888;}
                 //spawnpoint
                 m_minion.X = 572108 + m_rnd.Next(40);
                 m_minion.Y = 550063 + m_rnd.Next(40);
@@ -426,7 +430,9 @@ namespace GameServerScripts.gameevents
             {
                 m_minion.GuildName = "Midgard";
                 m_minion.Realm = realmSource;
-                m_minion.Model = 883;
+                //model
+                if (mobType == "melee"){m_minion.Model = 883;}
+                    else {m_minion.Model = 889;}
                 //spawnpoint
                 m_minion.X = 557070 + m_rnd.Next(40);
                 m_minion.Y = 572491 + m_rnd.Next(40);
