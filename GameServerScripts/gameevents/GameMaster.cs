@@ -33,6 +33,13 @@ using DOL.Events;
 using DOL.GS;
 using DOL.AI;
 using log4net;
+using System.Collections.Generic;
+using System.Collections;
+using DOL.GS.Effects;
+using DOL.GS.SkillHandler;
+using DOL.Language;
+
+
 
 namespace GameServerScripts.gameevents
 {
@@ -167,15 +174,6 @@ namespace GameServerScripts.gameevents
             }
         }
 
-        //Declare melee NPCs
-        public class MinionNPC : GameNPC
-        {           
-            //Empty constructor, sets the default parameters for this NPC
-            public MinionNPC() : base()
-            {
-                SetOwnBrain(new MinionBrain());
-            }
-        }
 
         //Declare nexuses
         public class AlbNexusNPC : GameNPC
@@ -220,34 +218,79 @@ namespace GameServerScripts.gameevents
                 CurrentRegionID = 234; //whatever proving ground is
             }
         }
+
+        //Declare melee NPCs
+        public class MinionNPC : GameNPC
+        {           
+            //Empty constructor, sets the default parameters for this NPC
+            public MinionNPC() : base()
+            {
+                //SetOwnBrain(new MinionBrain());
+            }
+        }
         #endregion
 
-        #region brain
+        #region custom minion brain
         public class MinionBrain : ABrain
         {
-            /// <summary>
-            /// Sparring dummy does not need to think often. He only needs to think to disengage from combat.
-            /// </summary>
-            //public override int ThinkInterval
-            //{
-            //    get { return 10000; }
-            //}
+            // Used for AmbientBehaviour "Seeing" - maintains a list of GameNPC in range
+            public List<GameNPC> NPCsSeen = new List<GameNPC>();
+            public const int MINION_SPACING = 50;
+
+            public const int MAX_AGGRO_DISTANCE = 3600;
+            public const int MAX_AGGRO_LIST_DISTANCE = 6000;
+            public const int MAX_PET_AGGRO_DISTANCE = 512;
+
+            public override int ThinkInterval
+            {
+                get { return 1500; }
+            }
+
             public override void Think()
             {
-                MinionNPC minion = Body as MinionNPC;
+            var realmSource = Body.Realm; //source realm of minion
+            var enemyTarget = Body.TargetObject; //target defined outside of brain (nexus)
+            MinionNPC minion = Body as MinionNPC;
 
-                //if (Body.AttackState)
-                //{
-                //    const long delay = 5000;
 
-                //    if (minion.LastAttacked + delay < Body.CurrentRegion.Time)
-                //    {
-                //        Body.StopAttack();
-                //        Body.TargetObject = null;
-                //        return;
-                //    }
-                //}
+            #region testing spacing
+            var currentNPCsSeen = new List<GameNPC>();
+            foreach (GameNPC npc in Body.GetNPCsInRadius((ushort)MINION_SPACING, true))
+            {
+                if (!NPCsSeen.Contains(npc))
+                {
+                    NPCsSeen.Add(npc);
+                }
+                currentNPCsSeen.Add(npc);
             }
+
+            for (int i = 0; i < NPCsSeen.Count; i++)
+            {
+                if (!NPCsSeen.Contains(NPCsSeen[i])) NPCsSeen.RemoveAt(i);
+            }
+
+            if (currentNPCsSeen.Count > 1)
+            {
+                Body.TurnTo((ushort)m_rnd.Next(1000));
+                Body.Walk(180);
+            }
+            else
+            {
+                if (Body.MaxSpeedBase > 0 && Body.CurrentSpellHandler == null && !Body.AttackState && !Body.InCombat)
+                {
+                    Body.TurnTo(enemyTarget);
+                    Body.Walk(180);
+                }
+            }
+        }
+            #endregion
+        
+
+        
+
+
+
+
         }
         #endregion
 
@@ -416,7 +459,26 @@ namespace GameServerScripts.gameevents
         protected static void SpawnMinion(eRealm realmSource, eRealm realmTarget, string mobType)//mobType can be "melee" or "caster"
         {
             //instantiate mob object
-            m_minion = new MinionNPC();//instantiate
+            m_minion = new MinionNPC();
+
+            //set targets based on realm
+            if (realmTarget == eRealm.Albion)
+            {
+                m_minion.TargetObject = m_albNexus;
+            } 
+            else if (realmTarget == eRealm.Midgard)
+            {
+                m_minion.TargetObject = m_midNexus;
+            }
+            else if (realmTarget == eRealm.Midgard)
+            {
+                m_minion.TargetObject = m_hibNexus;
+            }
+
+            //add brain
+            m_minion.AddBrain(new MinionBrain());
+
+            //minion type
             if (mobType == "melee")
             {
                 m_minion.LoadTemplate(meleeTemplate);//apply NPC template
@@ -426,6 +488,7 @@ namespace GameServerScripts.gameevents
                 m_minion.LoadTemplate(casterTemplate);//apply NPC template
                 m_minion.Name = "Caster";//name mob            
             }
+
             //basic minion properties
             m_minion.RespawnInterval = -1;
             m_minion.Level = 40;
@@ -475,7 +538,12 @@ namespace GameServerScripts.gameevents
             //finally add mob to world
             m_minion.AddToWorld();
 
-            //send mob to attack enemy nexus (not working becasue of brain: mob turns around)
+            //send mob to attack enemy nexus
+            WalkToNexus(realmTarget);
+        }
+
+        public static void WalkToNexus(eRealm realmTarget)
+        {
             if (realmTarget == eRealm.Albion)
             {
                 m_minion.WalkTo(572108, 550063, 8640, 400);
@@ -489,6 +557,8 @@ namespace GameServerScripts.gameevents
                 m_minion.WalkTo(542193, 550173, 8640, 400);
             }
         }
+
+
 
         //This function is called whenever the event is stopped
         //It should be used to clean up!
