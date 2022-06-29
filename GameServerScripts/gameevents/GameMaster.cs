@@ -172,7 +172,8 @@ namespace GameServerScripts.gameevents
         {           
             //Empty constructor, sets the default parameters for this NPC
             public MinionNPC() : base()
-            {                
+            {
+                SetOwnBrain(new MinionBrain());
             }
         }
 
@@ -219,7 +220,36 @@ namespace GameServerScripts.gameevents
                 CurrentRegionID = 234; //whatever proving ground is
             }
         }
-        #endregion     
+        #endregion
+
+        #region brain
+        public class MinionBrain : ABrain
+        {
+            /// <summary>
+            /// Sparring dummy does not need to think often. He only needs to think to disengage from combat.
+            /// </summary>
+            //public override int ThinkInterval
+            //{
+            //    get { return 10000; }
+            //}
+            public override void Think()
+            {
+                MinionNPC minion = Body as MinionNPC;
+
+                //if (Body.AttackState)
+                //{
+                //    const long delay = 5000;
+
+                //    if (minion.LastAttacked + delay < Body.CurrentRegion.Time)
+                //    {
+                //        Body.StopAttack();
+                //        Body.TargetObject = null;
+                //        return;
+                //    }
+                //}
+            }
+        }
+        #endregion
 
         #region variables
         //some randomness to use wherever
@@ -270,7 +300,7 @@ namespace GameServerScripts.gameevents
             m_albNexus.Y = 550063;
             m_albNexus.Z = 8640;
             m_albNexus.Heading = 731;
-            m_albNexus.Model = 34;
+            m_albNexus.Model = 242;
             m_albNexus.Name = "Albion King";
 
             //create MID Nexus instance
@@ -279,7 +309,7 @@ namespace GameServerScripts.gameevents
             m_midNexus.Y = 572491;
             m_midNexus.Z = 8640;
             m_midNexus.Heading = 2068;
-            m_midNexus.Model = 34;
+            m_midNexus.Model = 243;
             m_midNexus.Name = "Midgard King";
 
             //create HIB Nexus instance
@@ -288,7 +318,7 @@ namespace GameServerScripts.gameevents
             m_hibNexus.Y = 550173;
             m_hibNexus.Z = 8640;
             m_hibNexus.Heading = 3371;
-            m_hibNexus.Model = 34;
+            m_hibNexus.Model = 244;
             m_hibNexus.Name = "Hibernia King";
 
             //add Game Master to the world
@@ -410,7 +440,7 @@ namespace GameServerScripts.gameevents
                 m_minion.Realm = realmSource;
                 //model
                 if (mobType == "melee"){m_minion.Model = 881;}
-                    else {m_minion.Model = 887;}
+                    else {m_minion.Model = 2152;}
                 //spawnpoint
                 m_minion.X = 542193 + m_rnd.Next(40);
                 m_minion.Y = 550173 + m_rnd.Next(40);                
@@ -420,8 +450,8 @@ namespace GameServerScripts.gameevents
                 m_minion.GuildName = "Albion";
                 m_minion.Realm = realmSource;
                 //model
-                if (mobType == "melee"){m_minion.Model = 882;}
-                    else {m_minion.Model = 888;}
+                if (mobType == "melee"){m_minion.Model = 880;}
+                    else {m_minion.Model = 2151;}
                 //spawnpoint
                 m_minion.X = 572108 + m_rnd.Next(40);
                 m_minion.Y = 550063 + m_rnd.Next(40);
@@ -432,7 +462,7 @@ namespace GameServerScripts.gameevents
                 m_minion.Realm = realmSource;
                 //model
                 if (mobType == "melee"){m_minion.Model = 883;}
-                    else {m_minion.Model = 889;}
+                    else {m_minion.Model = 2168;}
                 //spawnpoint
                 m_minion.X = 557070 + m_rnd.Next(40);
                 m_minion.Y = 572491 + m_rnd.Next(40);
