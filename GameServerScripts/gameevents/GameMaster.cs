@@ -230,68 +230,82 @@ namespace GameServerScripts.gameevents
         }
         #endregion
 
+        //NOT USED
         #region custom minion brain
-        public class MinionBrain : ABrain
-        {
-            // Used for AmbientBehaviour "Seeing" - maintains a list of GameNPC in range
-            public List<GameNPC> NPCsSeen = new List<GameNPC>();
-            public const int MINION_SPACING = 50;
+        //public class MinionBrain : ABrain
+        //{
+        //    // Used for AmbientBehaviour "Seeing" - maintains a list of GameNPC in range
+        //    public List<GameNPC> NPCsSeen = new List<GameNPC>();
+        //    public const int MINION_SPACING = 40;
 
-            public const int MAX_AGGRO_DISTANCE = 3600;
-            public const int MAX_AGGRO_LIST_DISTANCE = 6000;
-            public const int MAX_PET_AGGRO_DISTANCE = 512;
+        //    public const int MAX_AGGRO_DISTANCE = 3600;
+        //    public const int MAX_AGGRO_LIST_DISTANCE = 6000;
+        //    public const int MAX_PET_AGGRO_DISTANCE = 512;
 
-            public override int ThinkInterval
-            {
-                get { return 1500; }
-            }
+        //    public override int ThinkInterval
+        //    {
+        //        get { return 1500; }
+        //    }
 
-            public override void Think()
-            {
-            var realmSource = Body.Realm; //source realm of minion
-            var enemyTarget = Body.TargetObject; //target defined outside of brain (nexus)
-            MinionNPC minion = Body as MinionNPC;
+        //    public override void Think()
+        //    {
+        //        MinionNPC minion = Body as MinionNPC;
 
+        //        var realmSource = Body.Realm; //source realm of minion
+        //        var enemyTarget = Body.TargetObject; //target defined outside of brain (nexus)
+        //        var xloc = Body.X;
+        //        var yloc = Body.Y;
+        //        var zloc = Body.Z;
 
-            #region testing spacing
-            var currentNPCsSeen = new List<GameNPC>();
-            foreach (GameNPC npc in Body.GetNPCsInRadius((ushort)MINION_SPACING, true))
-            {
-                if (!NPCsSeen.Contains(npc))
-                {
-                    NPCsSeen.Add(npc);
-                }
-                currentNPCsSeen.Add(npc);
-            }
+        //        #region Clump Prevention
+        //        var currentNPCsSeen = new List<GameNPC>();
+        //        foreach (GameNPC npc in Body.GetNPCsInRadius((ushort)MINION_SPACING, true))
+        //        {
+        //            if (!NPCsSeen.Contains(npc))
+        //            {
+        //                NPCsSeen.Add(npc);
+        //            }
+        //            currentNPCsSeen.Add(npc);
+        //        }
 
-            for (int i = 0; i < NPCsSeen.Count; i++)
-            {
-                if (!NPCsSeen.Contains(NPCsSeen[i])) NPCsSeen.RemoveAt(i);
-            }
+        //        for (int i = 0; i < NPCsSeen.Count; i++)
+        //        {
+        //            if (!NPCsSeen.Contains(NPCsSeen[i])) NPCsSeen.RemoveAt(i);
+        //        }
 
-            if (currentNPCsSeen.Count > 1)
-            {
-                Body.TurnTo((ushort)m_rnd.Next(1000));
-                Body.Walk(180);
-            }
-            else
-            {
-                if (Body.MaxSpeedBase > 0 && Body.CurrentSpellHandler == null && !Body.AttackState && !Body.InCombat)
-                {
-                    Body.TurnTo(enemyTarget);
-                    Body.Walk(180);
-                }
-            }
-        }
-            #endregion
-        
+        //        if (currentNPCsSeen.Count > 1)
+        //        {
+        //            Body.MoveInRegion(234, 
+        //                xloc + m_rnd.Next(MINION_SPACING), 
+        //                yloc + m_rnd.Next(MINION_SPACING), 
+        //                zloc + m_rnd.Next(MINION_SPACING), 
+        //                0, 
+        //                true);                    
+        //        }
+        //        #endregion
 
-        
+        //        #region Aggro
 
 
 
 
-        }
+        //        #endregion
+
+
+        //        if (Body.CurrentSpellHandler == null && !Body.AttackState && !Body.InCombat)
+        //        {
+        //            Body.StartAttack(enemyTarget);
+        //        }
+                
+        //    }
+
+
+
+
+
+
+
+        //}
         #endregion
 
         #region variables
@@ -382,7 +396,7 @@ namespace GameServerScripts.gameevents
             ///////////////////BELOW THIS LINE (within these brackets) MOVES TO NEW SECTION/////////////////
 
             //timer that will make mob waves every x milliseconds (move to session start) (remember to have a session end and close this)
-            m_waveTimer = new Timer(60000);
+            m_waveTimer = new Timer(30000);
             m_waveTimer.AutoReset = true;
             m_waveTimer.Elapsed += new ElapsedEventHandler(CreateMobWave);
             m_waveTimer.Start(); //this will move to session start method
@@ -461,23 +475,6 @@ namespace GameServerScripts.gameevents
             //instantiate mob object
             m_minion = new MinionNPC();
 
-            //set targets based on realm
-            if (realmTarget == eRealm.Albion)
-            {
-                m_minion.TargetObject = m_albNexus;
-            } 
-            else if (realmTarget == eRealm.Midgard)
-            {
-                m_minion.TargetObject = m_midNexus;
-            }
-            else if (realmTarget == eRealm.Midgard)
-            {
-                m_minion.TargetObject = m_hibNexus;
-            }
-
-            //add brain
-            m_minion.AddBrain(new MinionBrain());
-
             //minion type
             if (mobType == "melee")
             {
@@ -538,7 +535,7 @@ namespace GameServerScripts.gameevents
             //finally add mob to world
             m_minion.AddToWorld();
 
-            //send mob to attack enemy nexus
+            //send mob to fighting zone
             WalkToNexus(realmTarget);
         }
 
