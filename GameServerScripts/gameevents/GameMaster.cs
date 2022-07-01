@@ -43,55 +43,53 @@ using DOL.Language;
 
 namespace GameServerScripts.gameevents
 {
-    //Declare our event class
     public class GameMasterEvent
     {
         /// <summary>
-        /// Defines a logger for this class.
+        /// Defines a logger for this class
         /// </summary>
         private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         #region NPCs
-        //Declare our GameMasterNPC class which derives from GameNPC (and inherits all it's functionality)
+        
+        // Declare GameMasterNPC class which derives from GameNPC
         public class GameMasterNPC : GameNPC
         {
-            //Empty constructor, sets the default parameters for this NPC
+            // Empty constructor: sets the default parameters for this NPC
             public GameMasterNPC() : base()
             {
                 Model = 2125;
                 Size = 100;
                 Level = 60;
-                Realm = 0;
+                Realm = eRealm.None;                
                 Heading = 3089;
                 CurrentRegionID = 147;
                 GuildName = "Queue Here";
             }
 
-            //Right-click on Game Master
+            // Right-click on Game Master
             public override bool Interact(GamePlayer player)
             {
-                if (!base.Interact(player))
-                    return false;
-
-                //if (game is happening right now)
-                //SendReply(player, "There is an active game session. You cannot queue.\n\n" +
-                //    "It has been going on for " + m_waveTimer(whatevercommand) + " time.");
-
-
-                //get int for players in region for y
-                //get int for players in queue for x from the 2d array (playerQueue.length)
-                SendReply(player, "There are X/Y players in the queue/lobby.\n\n" +
-                                    player.Name + ", please choose an option:\n\n" +
-                                    "[Join Queue]\n" +
-                                    "[Leave Queue]\n" +
-                                    "[Start Game] (for testing purposes)");
-                return true;
+                if (isSessionActive)
+                {
+                    SendReply(player, "A game is in progress.");
+                    return true;
+                }
+                else
+                { 
+                    SendReply(player, player.Name + ", please choose an option:\n\n" +
+                                        "Players in queue: " + playerQueue.Count + "\n" +
+                                        "[Join Queue]\n" +
+                                        "[Leave Queue]\n" +
+                                        "[Start Game]");
+                    return true;
+                }
             }
 
             public override bool WhisperReceive(GameLiving source, string str)
             {
                 if (!base.WhisperReceive(source, str)) return false;
                 if (!(source is GamePlayer)) return false;
-                //if (game is happening right now) return false;
+                if (isSessionActive) return false;               
 
                 GamePlayer player = source as GamePlayer;
                 TurnTo(player.X, player.Y);
@@ -99,83 +97,205 @@ namespace GameServerScripts.gameevents
                 switch (str)
                 {
                     case "Join Queue":
-                        //IF the player is not already in the queue:
-                        //add the player to 2 dimensional array for the queue
-                        //get int for players in region for y
-                        //get int for players in queue for x from the 2d array
-                        SendReply(player, "You have joined the queue. \n" +
-                                    "There are X/Y players in the queue/lobby.");
-                        log.Info(player.Name + " has joined the queue");
-                        log.Info("Full queue: " + playerQueue);
-                        //if the number of players in the queue vs number in lobby is correct, then start the game
-                        //StartSession();
-                        //(clear this queue when the game session is over)
-
-                        //ELSE
-                        //SendReply(player, "You are already in the queue."); 
+                        if (!playerQueue.Contains(player))
+                        {
+                            log.Info(playerQueue);
+                            playerQueue.Add(player);
+                            SendReply(player, "You have joined the queue. \n" +
+                                        "Players in queue: " + playerQueue.Count);
+                            log.Info(player.Name + " has joined the queue");
+                            log.Info(playerQueue);
+                        }
+                        else
+                        {
+                            SendReply(player, "You are already in the queue."); 
+                        }
                         break;
                     case "Leave Queue":
-                        //IF the player is in the queue:
-                        //remove the player from 2 dimensional array for the queue
-                        //get int for players in region for y
-                        //get int for players in queue for x from the 2d array
-                        SendReply(player, "You have left the queue. \n" +
-                                    "There are X/Y players in the queue/lobby.");
-                        log.Info(player.Name + " has left the queue");
-                        log.Info("Full queue: " + playerQueue);
-
-                        //ELSE
-                        //SendReply(player, "You can't leave a queue that you aren't in.");
+                       if (playerQueue.Contains(player)) {
+                            log.Info(playerQueue);
+                            playerQueue.Remove(player);
+                            log.Info(playerQueue);
+                            SendReply(player, "You have left the queue. \n" +
+                                        "Players in queue: " + playerQueue.Count);
+                            log.Info(player.Name + " has left the queue");
+                            log.Info(playerQueue);
+                        } else
+                        {
+                            SendReply(player, "You can't leave a queue that you aren't in.");
+                        }
                         break;
                     case "Start Game":
-                        //IF the player is in the queue:
-                        //remove the player from 2 dimensional array for the queue
-                        //get int for players in region for y
-                        //get int for players in queue for x from the 2d array
-                        SendReply(player, "Starting Game");
-                        log.Info("Starting Tower Defense game session.");
-                        log.Info("Full queue: " + playerQueue);
-                        StartSession();
-                        //player.MoveTo(); //battlegrounds
+                        if (playerQueue.Count > 1)
+                        {
+                            SendReply(player, "Starting game...");
+                            log.Info("Starting custom game session.");
+                            log.Info("Game Roster: " + playerQueue);
+                            StartSession(player);
+                        } else
+                        {
+                            SendReply(player, "Not enough players for a game!");
+                        }
+                                            
                         break;
                 }
                 return true;
             }
 
-            //sets the realm of the players for a fair match
-            private static void SetPlayerRealms(int[,] playersInQueue)
-            {
-                
-            }
-
-            //ports the players out to the battlegrounds for the game session
-            private static void MovePlayersToSession(int[,] playersInQueue)
-            {
-
-            }        
-
-            //start the game session
-            private static void StartSession()
-            {                
-                //set isSessionActive to true
-                //for each player in queue, SendReply(the game is starting)
-                //reset inventories/equipped items
-                //reset RPs
-                //reset money            
-                //set player realms
-                //for each player in queue, player.MoveTo to BG
-                //m_waveTimer.Start();
-            }
-
-            //cleaner than SayTo
+            // More attractive version of SayTo
             public void SendReply(GamePlayer player, string msg)
             {
                 player.Out.SendMessage(msg, eChatType.CT_System, eChatLoc.CL_PopupWindow);
             }
         }
 
+        #region Game Objective Functions
+        /// <summary>
+        /// Starts the game
+        /// </summary>
+        private static void StartSession(GamePlayer player)
+        {
+            isSessionActive = true;
+            //reset inventories/equipped items
+            //reset RPs
+            //reset money
+            SpawnSessionNPCs();
+            SetPlayerRealms();
+            MovePlayersToSession(); //move and bind players in pks    
 
-        //Declare nexuses
+            m_sessionTimer = new Timer(10000);
+            m_sessionTimer.AutoReset = true;
+            m_sessionTimer.Elapsed += new ElapsedEventHandler(CheckGameEvents);
+            m_sessionTimer.Start();
+
+            //mob wave timer starts
+            //m_waveTimer = new Timer(30000);
+            //m_waveTimer.AutoReset = true;
+            //m_waveTimer.Elapsed += new ElapsedEventHandler(CreateMobWave);
+            //m_waveTimer.Start();
+        }
+
+        /// <summary>
+        /// Ends the game
+        /// </summary>
+        private static void EndSession()
+        {
+            KillRemainingNPCs();
+            MovePlayersFromSession();
+            playerQueue.Clear();
+            isSessionActive = false;
+            m_sessionTimer.Stop();
+            m_sessionTimer.Close();
+
+            //m_waveTimer.Stop();
+            //m_waveTimer.Close();
+        }
+
+        /// <summary>
+        /// Checks if game objectives have been completed
+        /// </summary>
+        public static void CheckGameEvents(object sender, ElapsedEventArgs args)
+        {
+            //check if only one nexus is alive (win the game)
+            if (m_albNexus.IsAlive && !m_hibNexus.IsAlive && !m_midNexus.IsAlive
+                || m_hibNexus.IsAlive && !m_albNexus.IsAlive && !m_midNexus.IsAlive
+                || m_midNexus.IsAlive && !m_hibNexus.IsAlive && !m_albNexus.IsAlive)
+            {
+                EndSession();
+            }
+
+        }
+
+        /// <summary>
+        /// Sets the realm of the players for a fair match (use playerQueue)
+        /// </summary>
+        private static void SetPlayerRealms()
+        {
+            var i = 0;
+            foreach (var person in playerQueue)
+            {
+                if (i == 0)
+                {
+                    person.Realm = eRealm.Albion;                            
+                } 
+                else if (i == 1)
+                {
+                    person.Realm = eRealm.Midgard;                           
+                }
+                else if (i == 2)
+                {
+                    person.Realm = eRealm.Hibernia;                           
+                }
+
+                i++;
+                if (i > 2)                    
+                {
+                    i = 0;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Ports a player to the correct PK
+        /// </summary>
+        private static void MovePlayersToSession()
+        {
+            foreach (var person in playerQueue)
+            {
+                if (person.Realm == eRealm.Albion)
+                {
+                    person.MoveTo(234, 572689, 549687, 8640, 731);
+                    person.Bind(true);
+                }
+                else if (person.Realm == eRealm.Midgard)
+                {
+                    person.MoveTo(234, 557159, 573161, 8640, 2068);
+                    person.Bind(true);
+                }
+                else if (person.Realm == eRealm.Hibernia)
+                {
+                    person.MoveTo(234, 541523, 549946, 8640, 3371);
+                    person.Bind(true);
+                }
+            }
+        }        
+            
+        /// <summary>
+        /// Spawn all mobs in battleground
+        /// </summary>
+        private static void SpawnSessionNPCs()
+        {
+            //add Nexuses to world
+            m_albNexus.AddToWorld();
+            m_midNexus.AddToWorld();
+            if (playerQueue.Count > 2)
+            {
+                m_hibNexus.AddToWorld();
+            }
+        }
+        
+        /// <summary>
+        /// Ports players back to Game Lobby and binds them
+        /// </summary>
+        private static void MovePlayersFromSession()
+        {
+            foreach (var person in playerQueue)
+            {
+                person.MoveTo(147, 42803, 38478, 10225, 1023);
+                person.Bind(true);
+            }
+        }
+
+        private static void KillRemainingNPCs()
+        {
+            m_midNexus.Delete();
+            m_hibNexus.Delete();
+            m_albNexus.Delete();
+        }
+                
+        #endregion
+
+        #region Nexus Declaration
         public class AlbNexusNPC : GameNPC
         {
             //Empty constructor, sets the default parameters for this NPC
@@ -218,120 +338,55 @@ namespace GameServerScripts.gameevents
                 CurrentRegionID = 234; //whatever proving ground is
             }
         }
-
-        //Declare melee NPCs
-        public class MinionNPC : GameNPC
-        {           
-            //Empty constructor, sets the default parameters for this NPC
-            public MinionNPC() : base()
-            {
-                //SetOwnBrain(new MinionBrain());
-            }
-        }
         #endregion
 
-        //NOT USED
-        #region custom minion brain
-        //public class MinionBrain : ABrain
-        //{
-        //    // Used for AmbientBehaviour "Seeing" - maintains a list of GameNPC in range
-        //    public List<GameNPC> NPCsSeen = new List<GameNPC>();
-        //    public const int MINION_SPACING = 40;
-
-        //    public const int MAX_AGGRO_DISTANCE = 3600;
-        //    public const int MAX_AGGRO_LIST_DISTANCE = 6000;
-        //    public const int MAX_PET_AGGRO_DISTANCE = 512;
-
-        //    public override int ThinkInterval
+        #region Declare Minion (commented out for now)
+        ////Declare melee NPCs
+        //public class MinionNPC : GameNPC
+        //{           
+        //    //Empty constructor, sets the default parameters for this NPC
+        //    public MinionNPC() : base()
         //    {
-        //        get { return 1500; }
         //    }
-
-        //    public override void Think()
-        //    {
-        //        MinionNPC minion = Body as MinionNPC;
-
-        //        var realmSource = Body.Realm; //source realm of minion
-        //        var enemyTarget = Body.TargetObject; //target defined outside of brain (nexus)
-        //        var xloc = Body.X;
-        //        var yloc = Body.Y;
-        //        var zloc = Body.Z;
-
-        //        #region Clump Prevention
-        //        var currentNPCsSeen = new List<GameNPC>();
-        //        foreach (GameNPC npc in Body.GetNPCsInRadius((ushort)MINION_SPACING, true))
-        //        {
-        //            if (!NPCsSeen.Contains(npc))
-        //            {
-        //                NPCsSeen.Add(npc);
-        //            }
-        //            currentNPCsSeen.Add(npc);
-        //        }
-
-        //        for (int i = 0; i < NPCsSeen.Count; i++)
-        //        {
-        //            if (!NPCsSeen.Contains(NPCsSeen[i])) NPCsSeen.RemoveAt(i);
-        //        }
-
-        //        if (currentNPCsSeen.Count > 1)
-        //        {
-        //            Body.MoveInRegion(234, 
-        //                xloc + m_rnd.Next(MINION_SPACING), 
-        //                yloc + m_rnd.Next(MINION_SPACING), 
-        //                zloc + m_rnd.Next(MINION_SPACING), 
-        //                0, 
-        //                true);                    
-        //        }
-        //        #endregion
-
-        //        #region Aggro
-
-
-
-
-        //        #endregion
-
-
-        //        if (Body.CurrentSpellHandler == null && !Body.AttackState && !Body.InCombat)
-        //        {
-        //            Body.StartAttack(enemyTarget);
-        //        }
-                
-        //    }
-
-
-
-
-
-
-
         //}
+        #endregion
         #endregion
 
         #region variables
-        //some randomness to use wherever
+        // Randomness to use
         private static Random m_rnd;
-        //one GameMasterNPC who will control the game session
+        
+        // GameMasterNPC who will initiates the game session
         private static GameMasterNPC m_gameMaster;
-        //a minion
-        private static MinionNPC m_minion;
-        private static INpcTemplate meleeTemplate = NpcTemplateMgr.GetTemplate(999999990);
-        private static INpcTemplate casterTemplate = NpcTemplateMgr.GetTemplate(999999991);
-        //the nexuses
+        
+        // Nexuses
         private static AlbNexusNPC m_albNexus;
         private static MidNexusNPC m_midNexus;
         private static HibNexusNPC m_hibNexus;
-        //timers to time the creation of mob waves
-        private static Timer m_waveTimer;
-        private static Timer m_soloTimer;
-        //ints for mobs per wave
-        private static int i = 0; //counter start at 0
-        private static int meleeSize = 2; //number of melee mobs to make (front line), remainder of wave are casters
-        private static int waveSize = 4; //max mobs per wave
-        //2d array for players (player,realm (to be changed to proper realm on start), minionScore (start at 0, add per minion kill))
-        private static int[,] playerQueue;
-        //bool for if a game is active
+
+        // Game session timer
+        private static Timer m_sessionTimer;
+
+        // List of players in game/queue
+        private static List<GamePlayer> playerQueue = new List<GamePlayer>();       
+
+        // Bool for if a game session is active
         private static bool isSessionActive = false;
+       
+            // Minion
+            //private static MinionNPC m_minion;
+            //private static INpcTemplate meleeTemplate = NpcTemplateMgr.GetTemplate(999999990);
+            //private static INpcTemplate casterTemplate = NpcTemplateMgr.GetTemplate(999999991);
+
+            // Minion wave timers
+            //private static Timer m_waveTimer;
+            //private static Timer m_soloTimer;
+
+            // Ints for minion waves
+            //private static int i = 0; //counter start at 0
+            //private static int meleeSize = 1; //number of melee mobs to make (front line), remainder of wave are casters
+            //private static int waveSize = 2; //max mobs per wave
+        
         #endregion
 
 
@@ -341,220 +396,213 @@ namespace GameServerScripts.gameevents
         [ScriptLoadedEvent]
         public static void OnScriptsCompiled(DOLEvent e, object sender, EventArgs args)
         {
-            //We set a new random class (this will move to StartSession() when start moves)
+            // Declare random instance so it is usable
             m_rnd = new Random();
 
-            //create Game Master instance
+            // Game Master instance
             m_gameMaster = new GameMasterNPC();
+            m_gameMaster.Faction = FactionMgr.GetFactionByID(0);
             m_gameMaster.X = 42079;
             m_gameMaster.Y = 38399;
             m_gameMaster.Z = 10341;
             m_gameMaster.Name = "Game Master";
 
-            //create ALB Nexus instance
+            // ALB Nexus instance
             m_albNexus = new AlbNexusNPC();
             m_albNexus.X = 572108;
             m_albNexus.Y = 550063;
             m_albNexus.Z = 8640;
             m_albNexus.Heading = 731;
             m_albNexus.Model = 242;
+            m_albNexus.Realm = eRealm.Albion;
             m_albNexus.Name = "Albion King";
 
-            //create MID Nexus instance
+            // MID Nexus instance
             m_midNexus = new MidNexusNPC();
             m_midNexus.X = 557070;
             m_midNexus.Y = 572491;
             m_midNexus.Z = 8640;
             m_midNexus.Heading = 2068;
             m_midNexus.Model = 243;
+            m_albNexus.Realm = eRealm.Midgard;
             m_midNexus.Name = "Midgard King";
 
-            //create HIB Nexus instance
+            // HIB Nexus instance
             m_hibNexus = new HibNexusNPC();
             m_hibNexus.X = 542193;
             m_hibNexus.Y = 550173;
             m_hibNexus.Z = 8640;
             m_hibNexus.Heading = 3371;
             m_hibNexus.Model = 244;
+            m_albNexus.Realm = eRealm.Hibernia;
             m_hibNexus.Name = "Hibernia King";
 
-            //add Game Master to the world
+            // Add Game Master to the world
             bool good = true;
             if (!m_gameMaster.AddToWorld())
-                good = false;
+                good = false;            
 
-            //add Nexuses to world
-            m_albNexus.AddToWorld();
-            m_midNexus.AddToWorld();
-            m_hibNexus.AddToWorld();
-
-            //logging
+            // Logging
             if (log.IsInfoEnabled)
                 if (log.IsInfoEnabled)
-                    log.Info("GameMasterNPCEvent initialized: " + good);
-
-            ///////////////////BELOW THIS LINE (within these brackets) MOVES TO NEW SECTION/////////////////
-
-            //timer that will make mob waves every x milliseconds (move to session start) (remember to have a session end and close this)
-            m_waveTimer = new Timer(30000);
-            m_waveTimer.AutoReset = true;
-            m_waveTimer.Elapsed += new ElapsedEventHandler(CreateMobWave);
-            m_waveTimer.Start(); //this will move to session start method
-        }        
-
-        //timercallback function fired to start every mob wave
-        protected static void CreateMobWave(object sender, ElapsedEventArgs args) //FIRING EVERY MINUTE
-        {
-            m_soloTimer = new Timer(1000);
-            m_soloTimer.AutoReset = true;
-            m_soloTimer.Elapsed += new ElapsedEventHandler(CreateMobSolo);
-            m_soloTimer.Start();
+                    log.Info("GameMasterNPCEvent initialized: " + good);           
         }
 
-        //timercallback function fired to make each individual mob of a mob wave
-        protected static void CreateMobSolo(object sender, ElapsedEventArgs args)
-        {
-            i++; //increases by 1 per timer elapse
+        #region Minion Wave Handling
 
-            //make melee mobs where # = meleeSize
-            if (i <= meleeSize)
-            {
-                if (m_albNexus.IsAlive && m_hibNexus.IsAlive)
-                {
-                    SpawnMinion(eRealm.Hibernia, eRealm.Albion, "melee");
-                    SpawnMinion(eRealm.Albion, eRealm.Hibernia, "melee");
-                }
+        ////timercallback function fired to start every mob wave
+        //protected static void CreateMobWave(object sender, ElapsedEventArgs args) //FIRING EVERY MINUTE
+        //{
+        //    m_soloTimer = new Timer(1000);
+        //    m_soloTimer.AutoReset = true;
+        //    m_soloTimer.Elapsed += new ElapsedEventHandler(CreateMobSolo);
+        //    m_soloTimer.Start();
+        //}
 
-                if (m_albNexus.IsAlive && m_midNexus.IsAlive)
-                {
-                    SpawnMinion(eRealm.Albion, eRealm.Midgard, "melee");
-                    SpawnMinion(eRealm.Midgard, eRealm.Albion, "melee");
-                }
+        ////timercallback function fired to make each individual mob of a mob wave
+        //protected static void CreateMobSolo(object sender, ElapsedEventArgs args)
+        //{
+        //    i++; //increases by 1 per timer elapse
 
-                if (m_midNexus.IsAlive && m_hibNexus.IsAlive)
-                {
-                    SpawnMinion(eRealm.Hibernia, eRealm.Midgard, "melee");
-                    SpawnMinion(eRealm.Midgard, eRealm.Hibernia, "melee");                
-                }
-            }
-            //make  caster mobs from remainder of i count
-            else
-            {
-                if (m_albNexus.IsAlive && m_hibNexus.IsAlive)
-                {
-                    SpawnMinion(eRealm.Hibernia, eRealm.Albion, "caster");
-                    SpawnMinion(eRealm.Albion, eRealm.Hibernia, "caster");
-                }
+        //    //make melee mobs where # = meleeSize
+        //    if (i <= meleeSize)
+        //    {
+        //        if (m_albNexus.IsAlive && m_hibNexus.IsAlive)
+        //        {
+        //            SpawnMinion(eRealm.Hibernia, eRealm.Albion, "melee");
+        //            SpawnMinion(eRealm.Albion, eRealm.Hibernia, "melee");
+        //        }
 
-                if (m_albNexus.IsAlive && m_midNexus.IsAlive)
-                {
-                    SpawnMinion(eRealm.Albion, eRealm.Midgard, "caster");
-                    SpawnMinion(eRealm.Midgard, eRealm.Albion, "caster");
-                }
+        //        if (m_albNexus.IsAlive && m_midNexus.IsAlive)
+        //        {
+        //            SpawnMinion(eRealm.Albion, eRealm.Midgard, "melee");
+        //            SpawnMinion(eRealm.Midgard, eRealm.Albion, "melee");
+        //        }
 
-                if (m_midNexus.IsAlive && m_hibNexus.IsAlive)
-                {
-                    SpawnMinion(eRealm.Hibernia, eRealm.Midgard, "caster");
-                    SpawnMinion(eRealm.Midgard, eRealm.Hibernia, "caster");
-                }
-            }
+        //        if (m_midNexus.IsAlive && m_hibNexus.IsAlive)
+        //        {
+        //            SpawnMinion(eRealm.Hibernia, eRealm.Midgard, "melee");
+        //            SpawnMinion(eRealm.Midgard, eRealm.Hibernia, "melee");                
+        //        }
+        //    }
+        //    //make  caster mobs from remainder of i count
+        //    else
+        //    {
+        //        if (m_albNexus.IsAlive && m_hibNexus.IsAlive)
+        //        {
+        //            SpawnMinion(eRealm.Hibernia, eRealm.Albion, "caster");
+        //            SpawnMinion(eRealm.Albion, eRealm.Hibernia, "caster");
+        //        }
 
-            //when i meets the limit the solo timer stops, and no more mobs are made in this wave
-            if (i >= waveSize)
-                if (m_soloTimer != null)
-                {
-                    i = 0;//reset i to 0
-                    m_soloTimer.Stop();
-                    m_soloTimer.Close();
-                }
-        }
+        //        if (m_albNexus.IsAlive && m_midNexus.IsAlive)
+        //        {
+        //            SpawnMinion(eRealm.Albion, eRealm.Midgard, "caster");
+        //            SpawnMinion(eRealm.Midgard, eRealm.Albion, "caster");
+        //        }
 
-        //creates single melee minion
-        protected static void SpawnMinion(eRealm realmSource, eRealm realmTarget, string mobType)//mobType can be "melee" or "caster"
-        {
-            //instantiate mob object
-            m_minion = new MinionNPC();
+        //        if (m_midNexus.IsAlive && m_hibNexus.IsAlive)
+        //        {
+        //            SpawnMinion(eRealm.Hibernia, eRealm.Midgard, "caster");
+        //            SpawnMinion(eRealm.Midgard, eRealm.Hibernia, "caster");
+        //        }
+        //    }
 
-            //minion type
-            if (mobType == "melee")
-            {
-                m_minion.LoadTemplate(meleeTemplate);//apply NPC template
-                m_minion.Name = "Melee";//name mob            
-            } else
-            {
-                m_minion.LoadTemplate(casterTemplate);//apply NPC template
-                m_minion.Name = "Caster";//name mob            
-            }
+        //    //when i meets the limit the solo timer stops, and no more mobs are made in this wave
+        //    if (i >= waveSize)
+        //        if (m_soloTimer != null)
+        //        {
+        //            i = 0;//reset i to 0
+        //            m_soloTimer.Stop();
+        //            m_soloTimer.Close();
+        //        }
+        //}
 
-            //basic minion properties
-            m_minion.RespawnInterval = -1;
-            m_minion.Level = 40;
-            m_minion.IsWorthReward = true;
-            m_minion.Z = 8640;
-            m_minion.CurrentRegionID = 234;
+        ////creates single melee minion
+        //protected static void SpawnMinion(eRealm realmSource, eRealm realmTarget, string mobType)//mobType can be "melee" or "caster"
+        //{
+        //    //instantiate mob object
+        //    m_minion = new MinionNPC();
 
-            //realm source conditionals
-            if (realmSource == eRealm.Hibernia)
-            {
-                m_minion.GuildName = "Hibernia";
-                m_minion.Realm = realmSource;
-                //model
-                if (mobType == "melee"){m_minion.Model = 881;}
-                    else {m_minion.Model = 2152;}
-                //spawnpoint
-                m_minion.X = 542193 + m_rnd.Next(40);
-                m_minion.Y = 550173 + m_rnd.Next(40);                
-            }
-            else if (realmSource == eRealm.Albion)
-            {
-                m_minion.GuildName = "Albion";
-                m_minion.Realm = realmSource;
-                //model
-                if (mobType == "melee"){m_minion.Model = 880;}
-                    else {m_minion.Model = 2151;}
-                //spawnpoint
-                m_minion.X = 572108 + m_rnd.Next(40);
-                m_minion.Y = 550063 + m_rnd.Next(40);
-            }
-            else if (realmSource == eRealm.Midgard)
-            {
-                m_minion.GuildName = "Midgard";
-                m_minion.Realm = realmSource;
-                //model
-                if (mobType == "melee"){m_minion.Model = 883;}
-                    else {m_minion.Model = 2168;}
-                //spawnpoint
-                m_minion.X = 557070 + m_rnd.Next(40);
-                m_minion.Y = 572491 + m_rnd.Next(40);
-            }
-            else
-            {
-                return;
-            }
+        //    //minion type
+        //    if (mobType == "melee")
+        //    {
+        //        m_minion.LoadTemplate(meleeTemplate);//apply NPC template
+        //        m_minion.Name = "Melee";//name mob            
+        //    } else
+        //    {
+        //        m_minion.LoadTemplate(casterTemplate);//apply NPC template
+        //        m_minion.Name = "Caster";//name mob            
+        //    }
 
-            //finally add mob to world
-            m_minion.AddToWorld();
+        //    //basic minion properties
+        //    m_minion.RespawnInterval = -1;
+        //    m_minion.Level = 40;
+        //    m_minion.IsWorthReward = true;
+        //    m_minion.Z = 8640;
+        //    m_minion.CurrentRegionID = 234;
 
-            //send mob to fighting zone
-            WalkToNexus(realmTarget);
-        }
+        //    //realm source conditionals
+        //    if (realmSource == eRealm.Hibernia)
+        //    {
+        //        m_minion.GuildName = "Hibernia";
+        //        m_minion.Realm = realmSource;
+        //        //model
+        //        if (mobType == "melee"){m_minion.Model = 881;}
+        //            else {m_minion.Model = 2152;}
+        //        //spawnpoint
+        //        m_minion.X = 542193 + m_rnd.Next(40);
+        //        m_minion.Y = 550173 + m_rnd.Next(40);                
+        //    }
+        //    else if (realmSource == eRealm.Albion)
+        //    {
+        //        m_minion.GuildName = "Albion";
+        //        m_minion.Realm = realmSource;
+        //        //model
+        //        if (mobType == "melee"){m_minion.Model = 880;}
+        //            else {m_minion.Model = 2151;}
+        //        //spawnpoint
+        //        m_minion.X = 572108 + m_rnd.Next(40);
+        //        m_minion.Y = 550063 + m_rnd.Next(40);
+        //    }
+        //    else if (realmSource == eRealm.Midgard)
+        //    {
+        //        m_minion.GuildName = "Midgard";
+        //        m_minion.Realm = realmSource;
+        //        //model
+        //        if (mobType == "melee"){m_minion.Model = 883;}
+        //            else {m_minion.Model = 2168;}
+        //        //spawnpoint
+        //        m_minion.X = 557070 + m_rnd.Next(40);
+        //        m_minion.Y = 572491 + m_rnd.Next(40);
+        //    }
+        //    else
+        //    {
+        //        return;
+        //    }
 
-        public static void WalkToNexus(eRealm realmTarget)
-        {
-            if (realmTarget == eRealm.Albion)
-            {
-                m_minion.WalkTo(572108, 550063, 8640, 400);
-            }
-            else if (realmTarget == eRealm.Midgard)
-            {
-                m_minion.WalkTo(557070, 572491, 8640, 400);
-            }
-            else if (realmTarget == eRealm.Hibernia)
-            {
-                m_minion.WalkTo(542193, 550173, 8640, 400);
-            }
-        }
+        //    //finally add mob to world
+        //    m_minion.AddToWorld();
 
+        //    //send mob to fighting zone
+        //    WalkToNexus(realmTarget);
+        //}
+
+        //public static void WalkToNexus(eRealm realmTarget)
+        //{
+        //    if (realmTarget == eRealm.Albion)
+        //    {
+        //        m_minion.WalkTo(572108, 550063, 8640, 400);
+        //    }
+        //    else if (realmTarget == eRealm.Midgard)
+        //    {
+        //        m_minion.WalkTo(557070, 572491, 8640, 400);
+        //    }
+        //    else if (realmTarget == eRealm.Hibernia)
+        //    {
+        //        m_minion.WalkTo(542193, 550173, 8640, 400);
+        //    }
+        //}
+        #endregion
 
 
         //This function is called whenever the event is stopped
@@ -562,19 +610,18 @@ namespace GameServerScripts.gameevents
         [ScriptUnloadedEvent]
         public static void OnScriptUnload(DOLEvent e, object sender, EventArgs args)
         {
-            //We stop our mob wave timer
-            if (m_waveTimer != null)
-            {
-                m_waveTimer.Stop();
-                m_waveTimer.Close();
-            }
-
-            //We stop our mob solo timer just in case it is on
-            if (m_soloTimer != null)
-            {
-                m_soloTimer.Stop();
-                m_soloTimer.Close();
-            }
+                // Stop minion timers
+                //if (m_waveTimer != null)
+                //{
+                //    m_waveTimer.Stop();
+                //    m_waveTimer.Close();
+                //}
+                        
+                //if (m_soloTimer != null)
+                //{
+                //    m_soloTimer.Stop();
+                //    m_soloTimer.Close();
+                //}
 
             //REMOVE EVERYTHING! FULL RESET! ANYTHING CREATED MUST BE DESTROYED!
 
