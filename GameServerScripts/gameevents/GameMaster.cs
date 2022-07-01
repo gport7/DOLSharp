@@ -156,9 +156,7 @@ namespace GameServerScripts.gameevents
         private static void StartSession(GamePlayer player)
         {
             isSessionActive = true;
-            //reset inventories/equipped items
-            //reset RPs
-            //reset money
+            ResetParticipants();
             SpawnSessionNPCs();
             SetPlayerRealms();
             MovePlayersToSession(); //move and bind players in pks    
@@ -168,11 +166,11 @@ namespace GameServerScripts.gameevents
             m_sessionTimer.Elapsed += new ElapsedEventHandler(CheckGameEvents);
             m_sessionTimer.Start();
 
-            //mob wave timer starts
-            //m_waveTimer = new Timer(30000);
-            //m_waveTimer.AutoReset = true;
-            //m_waveTimer.Elapsed += new ElapsedEventHandler(CreateMobWave);
-            //m_waveTimer.Start();
+                //mob wave timer starts
+                //m_waveTimer = new Timer(30000);
+                //m_waveTimer.AutoReset = true;
+                //m_waveTimer.Elapsed += new ElapsedEventHandler(CreateMobWave);
+                //m_waveTimer.Start();
         }
 
         /// <summary>
@@ -183,12 +181,12 @@ namespace GameServerScripts.gameevents
             KillRemainingNPCs();
             MovePlayersFromSession();
             playerQueue.Clear();
-            isSessionActive = false;
             m_sessionTimer.Stop();
             m_sessionTimer.Close();
+            isSessionActive = false;
 
-            //m_waveTimer.Stop();
-            //m_waveTimer.Close();
+                //m_waveTimer.Stop();
+                //m_waveTimer.Close();
         }
 
         /// <summary>
@@ -271,6 +269,19 @@ namespace GameServerScripts.gameevents
             if (playerQueue.Count > 2)
             {
                 m_hibNexus.AddToWorld();
+            }
+        }
+
+        /// <summary>
+        /// Reset players at the start of the game (so they can enjoy the items in the lobby after a match - they can go to dueling/practice zone)
+        /// </summary>
+        private static void ResetParticipants()
+        {
+            foreach (var person in playerQueue)
+            {
+                //delete inventories/equipment (except for starter items)
+                //add back and equip starter equipment
+                //reset RPS
             }
         }
         
@@ -449,7 +460,6 @@ namespace GameServerScripts.gameevents
         }
 
         #region Minion Wave Handling
-
         ////timercallback function fired to start every mob wave
         //protected static void CreateMobWave(object sender, ElapsedEventArgs args) //FIRING EVERY MINUTE
         //{
@@ -604,28 +614,11 @@ namespace GameServerScripts.gameevents
         //}
         #endregion
 
-
-        //This function is called whenever the event is stopped
-        //It should be used to clean up!
+        // This function is called whenever the event is stopped. It should be used to clean up!
         [ScriptUnloadedEvent]
         public static void OnScriptUnload(DOLEvent e, object sender, EventArgs args)
         {
-                // Stop minion timers
-                //if (m_waveTimer != null)
-                //{
-                //    m_waveTimer.Stop();
-                //    m_waveTimer.Close();
-                //}
-                        
-                //if (m_soloTimer != null)
-                //{
-                //    m_soloTimer.Stop();
-                //    m_soloTimer.Close();
-                //}
-
-            //REMOVE EVERYTHING! FULL RESET! ANYTHING CREATED MUST BE DESTROYED!
-
-            //We delete our master from the world
+            // Delete our Game Master from the world
             if (m_gameMaster != null)
                 m_gameMaster.Delete();
         }
