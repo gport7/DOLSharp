@@ -3608,14 +3608,14 @@ namespace DOL.GS
 		public override bool Interact(GamePlayer player)
 		{
 			if (!base.Interact(player)) return false;
-			if (!GameServer.ServerRules.IsSameRealm(this, player, true) && Faction.GetAggroToFaction(player) > 25)
-			{
-				player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameNPC.Interact.DirtyLook",
-					GetName(0, true, player.Client.Account.Language, this)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+			//if (!GameServer.ServerRules.IsSameRealm(this, player, true) && Faction.GetAggroToFaction(player) > 25)
+			//{
+			//	player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameNPC.Interact.DirtyLook",
+			//		GetName(0, true, player.Client.Account.Language, this)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 
-				Notify(GameObjectEvent.InteractFailed, this, new InteractEventArgs(player));
-				return false;
-			}
+			//	Notify(GameObjectEvent.InteractFailed, this, new InteractEventArgs(player));
+			//	return false;
+			//}
 			if (MAX_PASSENGERS > 1)
 			{
 				string name = "";
