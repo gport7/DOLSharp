@@ -239,15 +239,15 @@ namespace GameServerScripts.gameevents
         {
             KillRemainingNPCs();
             MovePlayersFromSession();
-            playerQueue.Clear();
+            ResetParticipantsEnd();
             m_sessionTimer.Stop();
             m_sessionTimer.Close();
-            isSessionActive = false;
-            ResetParticipantsEnd();
             //broadcast in region who won
 
             //m_waveTimer.Stop();
             //m_waveTimer.Close();
+            isSessionActive = false;
+            playerQueue.Clear();
         }
 
         /// <summary>
