@@ -299,6 +299,10 @@ namespace GameServerScripts.gameevents
                     }
                 }
             }
+
+            // Move player to region 234 if they login and they aren't in region 234 or 147
+            //foreach (var person in playerQueue)
+            //{ }
         }
 
         /// <summary>
@@ -434,14 +438,10 @@ namespace GameServerScripts.gameevents
         {
             foreach (var person in playerQueue)
             {
-                // Reset invulnerability, turn off safety flag
+                // Reset invulnerability
                 person.StartInvulnerabilityTimer(1, null);
+                // Reset player model
                 person.Model = (ushort)person.Client.Account.Characters[person.Client.ActiveCharIndex].CreationModel;
-
-
-                //delete inventories/equipment (except for starter items)
-                //add back and equip starter equipment
-                //reset RPS
             }
         }
 
