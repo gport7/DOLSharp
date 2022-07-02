@@ -260,6 +260,7 @@ namespace GameServerScripts.gameevents
                 || (m_hibNexus.IsAlive && !m_albNexus.IsAlive && !m_midNexus.IsAlive)
                 || (m_midNexus.IsAlive && !m_hibNexus.IsAlive && !m_albNexus.IsAlive))
             {
+                LastNameWins();
                 EndSession();
             }
 
@@ -303,6 +304,67 @@ namespace GameServerScripts.gameevents
             // Move player to region 234 if they login and they aren't in region 234 or 147
             //foreach (var person in playerQueue)
             //{ }
+        }
+
+        /// <summary>
+        /// Puts a number for how many wins you have for last name (put in end of round)
+        /// </summary>
+        public static void LastNameWins()
+        {
+            foreach (var person in playerQueue)
+            {
+                if (m_albNexus.IsAlive)
+                {
+                    if (person.Realm == eRealm.Albion)
+                    {
+                        if (person.LastName != null)
+                        {
+                            int lastNameInt = Int32.Parse(person.LastName);
+                            lastNameInt++;
+                            person.LastName = lastNameInt.ToString();
+                            
+                        } else
+                        {
+                            person.LastName = "1";
+                        }
+                    }
+                }
+                else if (m_hibNexus.IsAlive)
+                {
+
+                    if (person.Realm == eRealm.Hibernia)
+                    {
+                        if (person.LastName != null)
+                        {
+                            int lastNameInt = Int32.Parse(person.LastName);
+                            lastNameInt++;
+                            person.LastName = lastNameInt.ToString();
+
+                        }
+                        else
+                        {
+                            person.LastName = "1";
+                        }
+                    }
+                }
+                else if (m_midNexus.IsAlive)
+                {
+                    if (person.Realm == eRealm.Midgard)
+                    {
+                        if (person.LastName != null)
+                        {
+                            int lastNameInt = Int32.Parse(person.LastName);
+                            lastNameInt++;
+                            person.LastName = lastNameInt.ToString();
+
+                        }
+                        else
+                        {
+                            person.LastName = "1";
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
