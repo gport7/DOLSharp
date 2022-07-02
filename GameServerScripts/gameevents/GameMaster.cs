@@ -49,7 +49,8 @@ namespace GameServerScripts.gameevents
         /// Defines a logger for this class
         /// </summary>
         private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-        #region NPCs
+        
+        #region NPC Class Declarations
         
         // Declare GameMasterNPC class which derives from GameNPC
         public class GameMasterNPC : GameNPC
@@ -149,6 +150,64 @@ namespace GameServerScripts.gameevents
             }
         }
 
+        #region Nexus Class Declaration
+        public class AlbNexusNPC : GameGuard
+        {
+            //Empty constructor, sets the default parameters for this NPC
+            public AlbNexusNPC() : base()
+            {
+                RespawnInterval = -1;
+                Size = 150;
+                Level = 60;
+                Health = 10000;
+                Realm = eRealm.Albion;
+                IsWorthReward = true;
+                CurrentRegionID = 234; //whatever proving ground is
+            }
+        }
+        public class MidNexusNPC : GameGuard
+        {
+            //Empty constructor, sets the default parameters for this NPC
+            public MidNexusNPC() : base()
+            {
+                RespawnInterval = -1;
+                Size = 150;
+                Level = 60;
+                Health = 10000;
+                Realm = eRealm.Midgard;
+                IsWorthReward = true;
+                CurrentRegionID = 234; //whatever proving ground is
+            }
+        }
+        public class HibNexusNPC : GameGuard
+        {
+            //Empty constructor, sets the default parameters for this NPC
+            public HibNexusNPC() : base()
+            {
+                RespawnInterval = -1;
+                Size = 150;
+                Level = 60;
+                Health = 10000;
+                Realm = eRealm.Hibernia;
+                IsWorthReward = true;
+                CurrentRegionID = 234; //whatever proving ground is
+            }
+        }
+        #endregion Nexus Class Declaration
+
+        #region Declare Minion (commented out for now)
+        ////Declare melee NPCs
+        //public class MinionNPC : GameNPC
+        //{           
+        //    //Empty constructor, sets the default parameters for this NPC
+        //    public MinionNPC() : base()
+        //    {
+        //    }
+        //}
+        #endregion
+
+        #endregion  NPC Class Declarations
+
         #region Game Objective Functions
         /// <summary>
         /// Starts the game
@@ -156,21 +215,21 @@ namespace GameServerScripts.gameevents
         private static void StartSession(GamePlayer player)
         {
             isSessionActive = true;
-            ResetParticipants();
+            ResetParticipantsStart();
             SpawnSessionNPCs();
             SetPlayerRealms();
             MovePlayersToSession(); //move and bind players in pks    
 
-            m_sessionTimer = new Timer(10000);
+            m_sessionTimer = new Timer(1000);
             m_sessionTimer.AutoReset = true;
             m_sessionTimer.Elapsed += new ElapsedEventHandler(CheckGameEvents);
             m_sessionTimer.Start();
 
-                //mob wave timer starts
-                //m_waveTimer = new Timer(30000);
-                //m_waveTimer.AutoReset = true;
-                //m_waveTimer.Elapsed += new ElapsedEventHandler(CreateMobWave);
-                //m_waveTimer.Start();
+            //mob wave timer starts
+            //m_waveTimer = new Timer(30000);
+            //m_waveTimer.AutoReset = true;
+            //m_waveTimer.Elapsed += new ElapsedEventHandler(CreateMobWave);
+            //m_waveTimer.Start();
         }
 
         /// <summary>
@@ -184,9 +243,11 @@ namespace GameServerScripts.gameevents
             m_sessionTimer.Stop();
             m_sessionTimer.Close();
             isSessionActive = false;
+            ResetParticipantsEnd();
+            //broadcast in region who won
 
-                //m_waveTimer.Stop();
-                //m_waveTimer.Close();
+            //m_waveTimer.Stop();
+            //m_waveTimer.Close();
         }
 
         /// <summary>
@@ -194,14 +255,50 @@ namespace GameServerScripts.gameevents
         /// </summary>
         public static void CheckGameEvents(object sender, ElapsedEventArgs args)
         {
-            //check if only one nexus is alive (win the game)
-            if (m_albNexus.IsAlive && !m_hibNexus.IsAlive && !m_midNexus.IsAlive
-                || m_hibNexus.IsAlive && !m_albNexus.IsAlive && !m_midNexus.IsAlive
-                || m_midNexus.IsAlive && !m_hibNexus.IsAlive && !m_albNexus.IsAlive)
+            // Check if only one nexus is alive (win the game)
+            if ((m_albNexus.IsAlive && !m_hibNexus.IsAlive && !m_midNexus.IsAlive)
+                || (m_hibNexus.IsAlive && !m_albNexus.IsAlive && !m_midNexus.IsAlive)
+                || (m_midNexus.IsAlive && !m_hibNexus.IsAlive && !m_albNexus.IsAlive))
             {
                 EndSession();
             }
 
+            // Give each player passive income
+            foreach (GameClient client in WorldMgr.GetClientsOfRegion(234))
+            {
+                client.Player.AddMoney(100);
+            }
+
+
+            // Turn losers into skeletons and make it so they can't participate in PVP
+            foreach (var person in playerQueue)
+            {
+                if (!m_albNexus.IsAlive)
+                {
+                    if (person.Realm == eRealm.Albion)
+                    {
+                        person.StartInvulnerabilityTimer(2000, null);
+                        person.Model = 2046;                       
+                    }
+                }
+                else if (!m_hibNexus.IsAlive)
+                {
+
+                    if (person.Realm == eRealm.Hibernia)
+                    {
+                        person.StartInvulnerabilityTimer(2000, null);
+                        person.Model = 2046;                        
+                    }
+                }
+                else if (!m_midNexus.IsAlive)
+                {
+                    if (person.Realm == eRealm.Midgard)
+                    {
+                        person.StartInvulnerabilityTimer(2000, null);
+                        person.Model = 2046;                       
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -210,27 +307,55 @@ namespace GameServerScripts.gameevents
         private static void SetPlayerRealms()
         {
             var i = 0;
-            foreach (var person in playerQueue)
+            if (playerQueue.Count % 2 == 0 && playerQueue.Count % 3 != 0) //divisible by 2 and not divisible by 3
             {
-                if (i == 0)
+                foreach (var person in playerQueue)
                 {
-                    person.Realm = eRealm.Albion;                            
-                } 
-                else if (i == 1)
-                {
-                    person.Realm = eRealm.Midgard;                           
-                }
-                else if (i == 2)
-                {
-                    person.Realm = eRealm.Hibernia;                           
-                }
+                    if (i == 0)
+                    {
+                        person.Realm = eRealm.Albion;
+                    }
+                    else if (i == 1)
+                    {
+                        person.Realm = eRealm.Midgard;
+                    }
 
-                i++;
-                if (i > 2)                    
-                {
-                    i = 0;
+                    person.UpdatePlayerStatus();
+
+                    i++;
+                    if (i > 1)
+                    {
+                        i = 0;
+                    }
                 }
             }
+            else
+            {
+                foreach (var person in playerQueue)
+                {
+                    if (i == 0)
+                    {
+                        person.Realm = eRealm.Albion;
+                    }
+                    else if (i == 1)
+                    {
+                        person.Realm = eRealm.Midgard;
+                    }
+                    else if (i == 2)
+                    {
+                        person.Realm = eRealm.Hibernia;
+                    }
+
+                    person.UpdatePlayerStatus();
+
+                    i++;
+                    if (i > 2)
+                    {
+                        i = 0;
+                    }
+                }
+            }
+
         }
 
         /// <summary>
@@ -256,35 +381,86 @@ namespace GameServerScripts.gameevents
                     person.Bind(true);
                 }
             }
-        }        
-            
+        }
+
         /// <summary>
         /// Spawn all mobs in battleground
         /// </summary>
         private static void SpawnSessionNPCs()
         {
-            //add Nexuses to world
+            // ALB Nexus instance
+            m_albNexus = new AlbNexusNPC();
+            m_albNexus.X = 572108;
+            m_albNexus.Y = 550063;
+            m_albNexus.Z = 8640;
+            m_albNexus.Heading = 731;
+            m_albNexus.Model = 2151;
+            m_albNexus.Name = "Albion King";
+
+            // MID Nexus instance
+            m_midNexus = new MidNexusNPC();
+            m_midNexus.X = 557070;
+            m_midNexus.Y = 572491;
+            m_midNexus.Z = 8640;
+            m_midNexus.Heading = 2068;
+            m_midNexus.Model = 2168;
+            m_midNexus.Name = "Midgard King";
+
+            // HIB Nexus instance
+            m_hibNexus = new HibNexusNPC();
+            m_hibNexus.X = 542193;
+            m_hibNexus.Y = 550173;
+            m_hibNexus.Z = 8640;
+            m_hibNexus.Heading = 3371;
+            m_hibNexus.Model = 2152;
+            m_hibNexus.Name = "Hibernia King";
+
             m_albNexus.AddToWorld();
             m_midNexus.AddToWorld();
-            if (playerQueue.Count > 2)
+            m_hibNexus.AddToWorld();
+
+            // If there are 2 realms playing then the hib nexus begins the match dead
+            if ((playerQueue.Count % 2 == 0 && playerQueue.Count % 3 != 0)) // divisible by 2, not divisible by 3
             {
-                m_hibNexus.AddToWorld();
+                m_hibNexus.ChangeHealth(m_hibNexus, GameLiving.eHealthChangeType.Unknown, -999999);
+                m_hibNexus.Model = 1438;
             }
         }
 
         /// <summary>
         /// Reset players at the start of the game (so they can enjoy the items in the lobby after a match - they can go to dueling/practice zone)
         /// </summary>
-        private static void ResetParticipants()
+        private static void ResetParticipantsEnd()
         {
             foreach (var person in playerQueue)
             {
+                // Reset invulnerability, turn off safety flag
+                person.StartInvulnerabilityTimer(1, null);
+                person.Model = (ushort)person.Client.Account.Characters[person.Client.ActiveCharIndex].CreationModel;
+
+
                 //delete inventories/equipment (except for starter items)
                 //add back and equip starter equipment
                 //reset RPS
             }
         }
-        
+
+        /// <summary>
+        /// Reset players at the start of the game (so they can enjoy the items in the lobby after a match - they can go to dueling/practice zone)
+        /// </summary>
+        private static void ResetParticipantsStart()
+        {
+            foreach (var person in playerQueue)
+            {
+                // Reset money
+                long currentCash = person.GetCurrentMoney();
+                person.RemoveMoney(currentCash);
+                //delete inventories/equipment (except for starter items)
+                //add back and equip starter equipment
+                //reset RPS
+            }
+        }
+
         /// <summary>
         /// Ports players back to Game Lobby and binds them
         /// </summary>
@@ -292,84 +468,34 @@ namespace GameServerScripts.gameevents
         {
             foreach (var person in playerQueue)
             {
+                person.Release(GamePlayer.eReleaseType.Normal, true);
                 person.MoveTo(147, 42803, 38478, 10225, 1023);
                 person.Bind(true);
             }
         }
 
+        /// <summary>
+        /// Kills all instance mobs in game session (for reset purposes)
+        /// </summary>
         private static void KillRemainingNPCs()
         {
-            m_midNexus.Delete();
-            m_hibNexus.Delete();
-            m_albNexus.Delete();
+            if (m_albNexus != null)
+                m_albNexus.Delete();
+            if (m_midNexus != null)
+                m_midNexus.Delete();
+            if (m_hibNexus != null)
+                m_hibNexus.Delete();
         }
-                
-        #endregion
 
-        #region Nexus Declaration
-        public class AlbNexusNPC : GameNPC
-        {
-            //Empty constructor, sets the default parameters for this NPC
-            public AlbNexusNPC() : base()
-            {
-                RespawnInterval = -1;
-                Size = 150;
-                Level = 60;
-                Health = 10000;
-                Realm = eRealm.Albion;
-                IsWorthReward = true;
-                CurrentRegionID = 234; //whatever proving ground is
-            }
-        }
-        public class MidNexusNPC : GameNPC
-        {
-            //Empty constructor, sets the default parameters for this NPC
-            public MidNexusNPC() : base()
-            {
-                RespawnInterval = -1;
-                Size = 150;
-                Level = 60;
-                Health = 10000;
-                Realm = eRealm.Midgard;
-                IsWorthReward = true;
-                CurrentRegionID = 234; //whatever proving ground is
-            }
-        }
-        public class HibNexusNPC : GameNPC
-        {
-            //Empty constructor, sets the default parameters for this NPC
-            public HibNexusNPC() : base()
-            {
-                RespawnInterval = -1;
-                Size = 150;
-                Level = 60;
-                Health = 10000;
-                Realm = eRealm.Hibernia;
-                IsWorthReward = true;
-                CurrentRegionID = 234; //whatever proving ground is
-            }
-        }
-        #endregion
+        #endregion Game Objective Functions
 
-        #region Declare Minion (commented out for now)
-        ////Declare melee NPCs
-        //public class MinionNPC : GameNPC
-        //{           
-        //    //Empty constructor, sets the default parameters for this NPC
-        //    public MinionNPC() : base()
-        //    {
-        //    }
-        //}
-        #endregion
-        #endregion
-
-        #region variables
+        #region Variables
         // Randomness to use
         private static Random m_rnd;
         
         // GameMasterNPC who will initiates the game session
         private static GameMasterNPC m_gameMaster;
-        
+
         // Nexuses
         private static AlbNexusNPC m_albNexus;
         private static MidNexusNPC m_midNexus;
@@ -383,83 +509,26 @@ namespace GameServerScripts.gameevents
 
         // Bool for if a game session is active
         private static bool isSessionActive = false;
-       
-            // Minion
-            //private static MinionNPC m_minion;
-            //private static INpcTemplate meleeTemplate = NpcTemplateMgr.GetTemplate(999999990);
-            //private static INpcTemplate casterTemplate = NpcTemplateMgr.GetTemplate(999999991);
 
-            // Minion wave timers
-            //private static Timer m_waveTimer;
-            //private static Timer m_soloTimer;
+        #region Minion Variables (commented out for now)
+        // Minion
+        //private static MinionNPC m_minion;
+        //private static INpcTemplate meleeTemplate = NpcTemplateMgr.GetTemplate(999999990);
+        //private static INpcTemplate casterTemplate = NpcTemplateMgr.GetTemplate(999999991);
 
-            // Ints for minion waves
-            //private static int i = 0; //counter start at 0
-            //private static int meleeSize = 1; //number of melee mobs to make (front line), remainder of wave are casters
-            //private static int waveSize = 2; //max mobs per wave
-        
+        // Minion wave timers
+        //private static Timer m_waveTimer;
+        //private static Timer m_soloTimer;
+
+        // Ints for minion waves
+        //private static int i = 0; //counter start at 0
+        //private static int meleeSize = 1; //number of melee mobs to make (front line), remainder of wave are casters
+        //private static int waveSize = 2; //max mobs per wave
         #endregion
 
+        #endregion
 
-        //This function will be called to initialize the event
-        //It needs to be declared in EVERY game-event and is used
-        //to start things up.
-        [ScriptLoadedEvent]
-        public static void OnScriptsCompiled(DOLEvent e, object sender, EventArgs args)
-        {
-            // Declare random instance so it is usable
-            m_rnd = new Random();
-
-            // Game Master instance
-            m_gameMaster = new GameMasterNPC();
-            m_gameMaster.Faction = FactionMgr.GetFactionByID(0);
-            m_gameMaster.X = 42079;
-            m_gameMaster.Y = 38399;
-            m_gameMaster.Z = 10341;
-            m_gameMaster.Name = "Game Master";
-
-            // ALB Nexus instance
-            m_albNexus = new AlbNexusNPC();
-            m_albNexus.X = 572108;
-            m_albNexus.Y = 550063;
-            m_albNexus.Z = 8640;
-            m_albNexus.Heading = 731;
-            m_albNexus.Model = 242;
-            m_albNexus.Realm = eRealm.Albion;
-            m_albNexus.Name = "Albion King";
-
-            // MID Nexus instance
-            m_midNexus = new MidNexusNPC();
-            m_midNexus.X = 557070;
-            m_midNexus.Y = 572491;
-            m_midNexus.Z = 8640;
-            m_midNexus.Heading = 2068;
-            m_midNexus.Model = 243;
-            m_albNexus.Realm = eRealm.Midgard;
-            m_midNexus.Name = "Midgard King";
-
-            // HIB Nexus instance
-            m_hibNexus = new HibNexusNPC();
-            m_hibNexus.X = 542193;
-            m_hibNexus.Y = 550173;
-            m_hibNexus.Z = 8640;
-            m_hibNexus.Heading = 3371;
-            m_hibNexus.Model = 244;
-            m_albNexus.Realm = eRealm.Hibernia;
-            m_hibNexus.Name = "Hibernia King";
-
-            // Add Game Master to the world
-            bool good = true;
-            if (!m_gameMaster.AddToWorld())
-                good = false;            
-
-            // Logging
-            if (log.IsInfoEnabled)
-                if (log.IsInfoEnabled)
-                    log.Info("GameMasterNPCEvent initialized: " + good);           
-        }
-
-        #region Minion Wave Handling
+        #region Minion Wave Control (commented out for now)
         ////timercallback function fired to start every mob wave
         //protected static void CreateMobWave(object sender, ElapsedEventArgs args) //FIRING EVERY MINUTE
         //{
@@ -613,6 +682,34 @@ namespace GameServerScripts.gameevents
         //    }
         //}
         #endregion
+
+        //This function will be called to initialize the event
+        //It needs to be declared in EVERY game-event and is used
+        //to start things up.
+        [ScriptLoadedEvent]
+        public static void OnScriptsCompiled(DOLEvent e, object sender, EventArgs args)
+        {
+            // Declare random instance so it is usable
+            m_rnd = new Random();
+
+            // Game Master instance
+            m_gameMaster = new GameMasterNPC();
+            m_gameMaster.Faction = FactionMgr.GetFactionByID(0);
+            m_gameMaster.X = 42079;
+            m_gameMaster.Y = 38399;
+            m_gameMaster.Z = 10341;
+            m_gameMaster.Name = "Game Master";            
+
+            // Add Game Master to the world
+            bool good = true;
+            if (!m_gameMaster.AddToWorld())
+                good = false;            
+
+            // Logging
+            if (log.IsInfoEnabled)
+                if (log.IsInfoEnabled)
+                    log.Info("GameMasterNPCEvent initialized: " + good);           
+        }
 
         // This function is called whenever the event is stopped. It should be used to clean up!
         [ScriptUnloadedEvent]
