@@ -34,7 +34,7 @@ namespace DOL.GS.Delve
 		public SpellDelve(Spell spell)
 		{
 			DelveType = "Spell";
-			Index = unchecked((short)spell.InternalID);
+			//Index = unchecked((short)spell.InternalID);
 			spellHandler = ScriptMgr.CreateSpellHandler(GamePlayer.CreateDummy(), spell, SkillBase.GetSpellLine(GlobalSpellsLines.Reserved_Spells));
 		}
 
