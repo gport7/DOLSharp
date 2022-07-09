@@ -279,7 +279,7 @@ namespace GameServerScripts.gameevents
                     if (person.Realm == eRealm.Albion)
                     {
                         person.StartInvulnerabilityTimer(2000, null);
-                        person.Model = 2046;                       
+                        person.Model = 25;                       
                     }
                 }
                 else if (!m_hibNexus.IsAlive)
@@ -288,7 +288,7 @@ namespace GameServerScripts.gameevents
                     if (person.Realm == eRealm.Hibernia)
                     {
                         person.StartInvulnerabilityTimer(2000, null);
-                        person.Model = 2046;                        
+                        person.Model = 25;                        
                     }
                 }
                 else if (!m_midNexus.IsAlive)
@@ -296,7 +296,7 @@ namespace GameServerScripts.gameevents
                     if (person.Realm == eRealm.Midgard)
                     {
                         person.StartInvulnerabilityTimer(2000, null);
-                        person.Model = 2046;                       
+                        person.Model = 25;                       
                     }
                 }
             }
